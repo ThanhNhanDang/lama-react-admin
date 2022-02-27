@@ -37,3 +37,8 @@
   font-weight: 600;
   cursor: pointer;
 }
+
+.productUpload {
+  display: flex;
+  align-items: center;
+}

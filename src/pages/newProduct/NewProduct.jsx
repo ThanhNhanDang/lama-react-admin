@@ -1,3 +1,4 @@
+import { Publish } from "@material-ui/icons";
 import "./newProduct.css";
 
 export default function NewProduct() {
@@ -7,7 +8,17 @@ export default function NewProduct() {
       <form className="addProductForm">
         <div className="addProductItem">
           <label>Image</label>
-          <input type="file" id="file" />
+          <div className="productUpload">
+            <img
+              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQNDaMqKyDwBijFd-y-JsluVcSaQ2dYR5DEM4qUkuiTvnq8mNtI6oyI5JZdgWGqMYb7xfQ&usqp=CAU"
+              alt=""
+              className="productUploadImg"
+            />
+            <label for="file">
+              <Publish />
+            </label>
+            <input type="file" id="file" style={{ display: "none" }} />
+          </div>
         </div>
         <div className="addProductItem">
           <label>Name</label>
