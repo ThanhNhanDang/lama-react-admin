@@ -76,34 +76,95 @@ const MenuProps = {
   },
 };
 
-const request = {};
+const requestJson = {
+  sku: "",
+  name: "",
+  active: true,
+  price: 0,
+  discount: 0,
+  isNew: false,
+  rating: 5,
+  saleCount: 0,
+  createAt: "2022-02-21T15:01:40.298Z",
+  offerEnd: "2023-04-20T15:01:40.298Z",
+  customerId: 0,
+  stock: 0,
+  category: [],
+  tag: [],
+  variation: [],
+  productImage: [],
+  fullDescription: "",
+  shortDescription: "",
+};
 
 export default function NewProduct() {
   const theme = useTheme();
   const classes = useStyles(theme);
-  const [productImage, setProductImage] = useState([
-    { name: "https://i.ibb.co/4ghxdgm/iphone-13-pro-sierra-blue-600x600.jpg" },
-    {
-      name: "https://i.ibb.co/tBfttP4/tren-tay-asus-rog-phone-5-ultimate-01.jpg",
-    },
-  ]);
-  const [variation, setVariation] = useState([]);
   const [cate, setCate] = useState([]);
   const [tags, setTags] = useState([]);
-  const [active, setActive] = useState(true);
-  const [news, setNew] = useState(false);
-  const [rating, setRating] = useState(5);
+  const [request, setRequest] = useState(requestJson);
+
+  const handleSkuRequest = (e) => {
+    var payload = { ...request, sku: e.target.value };
+    setRequest(payload);
+  };
+
+  const handleNameRequest = (e) => {
+    var payload = { ...request, name: e.target.value };
+    setRequest(payload);
+  };
+
+  const handlePriceRequest = (e) => {
+    var payload = { ...request, price: e.target.value };
+    setRequest(payload);
+  };
+
+  const handleStockRequest = (e) => {
+    var payload = { ...request, stock: e.target.value };
+    setRequest(payload);
+  };
+  const handleDiscountRequest = (e) => {
+    var payload = { ...request, discount: e.target.value };
+    setRequest(payload);
+  };
+
+  const handleSaleCountRequest = (e) => {
+    var payload = { ...request, saleCount: e.target.value };
+    setRequest(payload);
+  };
+
+  const handleCreateAtRequest = (e) => {
+    var payload = { ...request, createAt: e.target.value };
+    setRequest(payload);
+  };
+
+  const handleSDesRequest = (e) => {
+    var payload = { ...request, shortDescription: e.target.value };
+    setRequest(payload);
+  };
+
+  const handleFDesRequest = (e) => {
+    var payload = { ...request, fullDescription: e.target.value };
+    setRequest(payload);
+  };
+
+  const handleOfferEndRequest = (e) => {
+    var payload = { ...request, offerEnd: e.target.value };
+    setRequest(payload);
+  };
 
   const handleRemoveSize = (indexVar, indexSize) => {
-    let newArr = [...variation];
+    let newArr = [...request.variation];
     newArr[indexVar] = {
       ...newArr[indexVar],
       size: newArr[indexVar].size.filter((item, i) => i !== indexSize),
     };
-    setVariation(newArr);
+
+    var payload = { ...request, variation: newArr };
+    setRequest(payload);
   };
   const handleSize = (index) => {
-    let newArr = [...variation];
+    let newArr = [...request.variation];
     newArr[index] = {
       ...newArr[index],
       size: [
@@ -114,94 +175,144 @@ export default function NewProduct() {
         },
       ],
     };
-    setVariation(newArr);
+
+    var payload = { ...request, variation: newArr };
+    setRequest(payload);
   };
 
   const handleSizeOption = (e, indexVar, indexSize) => {
-    let newArr = [...variation];
+    let newArr = [...request.variation];
     newArr[indexVar].size[indexSize] = {
       ...newArr[indexVar].size[indexSize],
       name: e.target.value,
     };
-    setVariation(newArr);
+    var payload = {...request, variation: newArr}
+    setRequest(payload)
   };
 
   const handleStockSize = (e, indexVar, indexSize) => {
-    let newArr = [...variation];
+    let newArr = [...request.variation];
     newArr[indexVar].size[indexSize] = {
       ...newArr[indexVar].size[indexSize],
       stock: e.target.value,
     };
-    setVariation(newArr);
+    var payload = {...request, variation: newArr}
+    setRequest(payload)
   };
 
   const handleVariation = () => {
-    setVariation((arr) => [...arr, variationJson]);
+    var payload = {
+      ...request,
+      variation: [...request.variation, variationJson],
+    };
+    setRequest(payload);
   };
   const thumbnailHandle = (e) => {
     if (e.target.files[0] == null) {
       return;
     }
+
+    const formData = new FormData();
+    formData.append("file", e.target.files[0]);
+
     var binaryData = [];
     binaryData.push(e.target.files[0]);
-    var arr = [...productImage];
-    arr = [
-      ...arr,
-      {
-        name: URL.createObjectURL(
-          new Blob(binaryData, { type: "application/zip" })
-        ),
-      },
-    ];
-    setProductImage(arr);
+    var payload = {
+      ...request,
+      productImage: [
+        ...request.productImage,
+        {
+          name: formData,
+          url: URL.createObjectURL(
+            new Blob(binaryData, { type: "application/zip" })
+          ),
+        },
+      ],
+    };
+    setRequest(payload);
   };
 
   const handleVariationImage = (e, index) => {
     if (e.target.files[0] == null) {
       return;
     }
-    let newArr = [...variation];
+    const formData = new FormData();
+    formData.append("file", e.target.files[0]);
+
     var binaryData = [];
     binaryData.push(e.target.files[0]);
+    var newArr = [...request.variation];
     newArr[index] = {
       ...newArr[index],
-      image: URL.createObjectURL(
+      image: formData,
+      imageUrl: URL.createObjectURL(
         new Blob(binaryData, { type: "application/zip" })
       ),
     };
-    setVariation(newArr);
+    var payload = { ...request, variation: newArr };
+    setRequest(payload);
   };
 
   const cateHandle = (e) => {
-    setCate(e.target.value);
+    var categories = e.target.value;
+    var payload = {
+      ...request,
+      category: categories.map((name) => ({ name })),
+    };
+    setCate(categories);
+    setRequest(payload);
   };
   const tagHandle = (e) => {
-    setTags(e.target.value);
+    var tags = e.target.value;
+    var payload = {
+      ...request,
+      tag: tags.map((name) => ({ name })),
+    };
+    setRequest(payload);
+    setTags(tags);
   };
   const activeHandle = (e) => {
-    setActive(e.target.value);
+    var payload = {
+      ...request,
+      active: e.target.value,
+    };
+    setRequest(payload);
   };
   const newHandle = (e) => {
-    setNew(e.target.value);
+    var payload = {
+      ...request,
+      isNew: e.target.value,
+    };
+    setRequest(payload);
   };
   const ratingHandle = (e) => {
-    setRating(e.target.value);
+    var payload = {
+      ...request,
+      rating: e.target.value,
+    };
+    setRequest(payload);
   };
 
   const handleSubmit = () => {
-    console.log(variation);
+    console.log(request);
   };
 
   const handleRemoveVariation = (indexVar) => {
-    var array = [...variation];
-    array.splice(indexVar, 1);
-    setVariation(array);
+    var newArr = [...request.variation];
+    newArr.splice(indexVar, 1);
+    var payload = {
+      ...request,
+      variation: newArr,
+    };
+    setRequest(payload);
   };
 
   const colorHandle = (e, indexVar) => {
-    let newArr = [...variation];
+    let newArr = [...request.variation];
     newArr[indexVar] = { ...newArr[indexVar], color: e.target.value };
-    setVariation(newArr);
+    var payload = { ...request, variation: newArr };
+
+    setRequest(payload);
   };
 
   return (
@@ -214,17 +325,21 @@ export default function NewProduct() {
             <Publish />
           </label>
           <div className="productUpload">
-            {productImage.map((item, index) => (
+            {request.productImage.map((item, index) => (
               <div key={index} className="containerImage">
-                <img src={item.name} alt="" className="image" />
+                <img src={item.url} alt="" className="image" />
                 <div className="middle">
                   <div className="text">
                     <DeleteIcon
-                      onClick={() =>
-                        setProductImage((currentThumb) =>
-                          currentThumb.filter((thumbnail, i) => i !== index)
-                        )
-                      }
+                      onClick={() => {
+                        var payload = {
+                          ...request,
+                          productImage: request.productImage.filter(
+                            (thumbnail, i) => i !== index
+                          ),
+                        };
+                        setRequest(payload);
+                      }}
                     />
                   </div>
                 </div>
@@ -243,7 +358,14 @@ export default function NewProduct() {
             <label for="sku">SKU</label>
           </div>
           <div className="col-75">
-            <input type="text" id="sku" name="sku" placeholder="sku" />
+            <input
+              type="text"
+              id="sku"
+              name="sku"
+              placeholder="sku"
+              value={request.sku}
+              onChange={handleSkuRequest}
+            />
           </div>
         </div>
         <div className="row">
@@ -251,7 +373,14 @@ export default function NewProduct() {
             <label for="name">Name</label>
           </div>
           <div className="col-75">
-            <input type="text" id="name" name="name" placeholder="Name" />
+            <input
+              type="text"
+              id="name"
+              name="name"
+              placeholder="Name"
+              value={request.name}
+              onChange={handleNameRequest}
+            />
           </div>
         </div>
         <div className="row">
@@ -263,6 +392,8 @@ export default function NewProduct() {
               type="number"
               id="price"
               name="price"
+              value={request.price}
+              onChange={handlePriceRequest}
               placeholder="99.99 $"
             />
           </div>
@@ -359,7 +490,7 @@ export default function NewProduct() {
               <Select
                 labelId="demo-simple-select-label"
                 id="demo-simple-select"
-                value={active}
+                value={request.active}
                 onChange={activeHandle}
               >
                 {activeData.map((item) => (
@@ -381,7 +512,7 @@ export default function NewProduct() {
               <Select
                 labelId="demo-simple-select-label"
                 id="demo-simple-select"
-                value={news}
+                value={request.isNew}
                 onChange={newHandle}
               >
                 {newsData.map((item) => (
@@ -405,7 +536,7 @@ export default function NewProduct() {
               <Select
                 labelId="demo-simple-select-label"
                 id="demo-simple-select"
-                value={rating}
+                value={request.rating}
                 onChange={ratingHandle}
               >
                 {ratingData.map((item) => (
@@ -422,7 +553,14 @@ export default function NewProduct() {
             <label for="stock">Stock</label>
           </div>
           <div className="col-75">
-            <input type="number" id="stock" name="stock" placeholder="99" />
+            <input
+              type="number"
+              id="stock"
+              name="stock"
+              placeholder="99"
+              value={request.stock}
+              onChange={handleStockRequest}
+            />
           </div>
         </div>
         <div className="row">
@@ -435,6 +573,8 @@ export default function NewProduct() {
               id="discount"
               name="discount"
               placeholder="10"
+              value={request.discount}
+              onChange={handleDiscountRequest}
             />
           </div>
         </div>
@@ -448,6 +588,8 @@ export default function NewProduct() {
               id="saleCount"
               name="saleCount"
               placeholder="10"
+              value={request.saleCount}
+              onChange={handleSaleCountRequest}
             />
           </div>
         </div>
@@ -456,7 +598,13 @@ export default function NewProduct() {
             <label for="createAt">Create at</label>
           </div>
           <div className="col-75">
-            <input type="datetime-local" id="createAt" name="createAt" />
+            <input
+              type="datetime-local"
+              value={request.createAt}
+              onChange={handleCreateAtRequest}
+              id="createAt"
+              name="createAt"
+            />
           </div>
         </div>
         <div className="row">
@@ -464,7 +612,13 @@ export default function NewProduct() {
             <label for="offerEnd">Offer End</label>
           </div>
           <div className="col-75">
-            <input type="datetime-local" id="offerEnd" name="offerEnd" />
+            <input
+              type="datetime-local"
+              value={request.offerEnd}
+              onChange={handleOfferEndRequest}
+              id="offerEnd"
+              name="offerEnd"
+            />
           </div>
         </div>
         <div className="row">
@@ -477,6 +631,8 @@ export default function NewProduct() {
               name="sdecription"
               placeholder="Write something.."
               style={{ height: "100px" }}
+              value={request.shortDescription}
+              onChange={handleSDesRequest}
             ></textarea>
           </div>
         </div>
@@ -489,6 +645,8 @@ export default function NewProduct() {
               id="fdecription"
               name="fdecription"
               placeholder="Write something.."
+              value={request.fullDescription}
+              onChange={handleFDesRequest}
               style={{ height: "150px" }}
             ></textarea>
           </div>
@@ -506,7 +664,7 @@ export default function NewProduct() {
             </IconButton>
           </div>
         </div>
-        {variation.map((item, indexVar) => (
+        {request.variation.map((item, indexVar) => (
           <div key={indexVar}>
             <hr />
             <h3>Variation ({indexVar + 1})</h3>
@@ -515,10 +673,10 @@ export default function NewProduct() {
               <label for={`file-${indexVar}`}>
                 <Publish />
               </label>
-              {item.image ? (
+              {item.imageUrl ? (
                 <div className="addProductItem">
                   <div className="containerImage">
-                    <img src={item.image} alt="" className="image" />
+                    <img src={item.imageUrl} alt="" className="image" />
                     <div className="middle">
                       <label for={`file-${indexVar}`}>
                         <Edit className="text2" />
