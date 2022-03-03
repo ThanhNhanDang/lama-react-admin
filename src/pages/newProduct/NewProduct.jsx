@@ -4,6 +4,8 @@ import DeleteSweepIcon from "@material-ui/icons/DeleteSweep";
 import "./newProduct.css";
 import DeleteIcon from "@material-ui/icons/Delete";
 import AddIcon from "@material-ui/icons/Add";
+import axios from "axios";
+
 import {
   activeData,
   categories,
@@ -80,15 +82,16 @@ const requestJson = {
   sku: "",
   name: "",
   active: true,
-  price: 0,
-  discount: 0,
+  price: NaN,
+  discount: NaN,
   isNew: false,
+  file: [],
   rating: 5,
-  saleCount: 0,
-  createAt: "2022-02-21T15:01:40.298Z",
-  offerEnd: "2023-04-20T15:01:40.298Z",
-  customerId: 0,
-  stock: 0,
+  saleCount: NaN,
+  createAtFormat: "2021-01-01T00:00:00",
+  offerEndFormat: "2021-01-01T00:00:00",
+  customerId: 1,
+  stock: NaN,
   category: [],
   tag: [],
   variation: [],
@@ -134,7 +137,7 @@ export default function NewProduct() {
   };
 
   const handleCreateAtRequest = (e) => {
-    var payload = { ...request, createAt: e.target.value };
+    var payload = { ...request, createAtFormat: e.target.value };
     setRequest(payload);
   };
 
@@ -149,7 +152,7 @@ export default function NewProduct() {
   };
 
   const handleOfferEndRequest = (e) => {
-    var payload = { ...request, offerEnd: e.target.value };
+    var payload = { ...request, offerEndFormat: e.target.value };
     setRequest(payload);
   };
 
@@ -186,8 +189,8 @@ export default function NewProduct() {
       ...newArr[indexVar].size[indexSize],
       name: e.target.value,
     };
-    var payload = {...request, variation: newArr}
-    setRequest(payload)
+    var payload = { ...request, variation: newArr };
+    setRequest(payload);
   };
 
   const handleStockSize = (e, indexVar, indexSize) => {
@@ -196,8 +199,8 @@ export default function NewProduct() {
       ...newArr[indexVar].size[indexSize],
       stock: e.target.value,
     };
-    var payload = {...request, variation: newArr}
-    setRequest(payload)
+    var payload = { ...request, variation: newArr };
+    setRequest(payload);
   };
 
   const handleVariation = () => {
@@ -208,26 +211,25 @@ export default function NewProduct() {
     setRequest(payload);
   };
   const thumbnailHandle = (e) => {
-    if (e.target.files[0] == null) {
+    if (e.target.files && e.target.files[0] == null) {
       return;
     }
-
     const formData = new FormData();
     formData.append("file", e.target.files[0]);
 
-    var binaryData = [];
-    binaryData.push(e.target.files[0]);
     var payload = {
       ...request,
-      productImage: [
-        ...request.productImage,
-        {
-          name: formData,
-          url: URL.createObjectURL(
-            new Blob(binaryData, { type: "application/zip" })
-          ),
-        },
-      ],
+      file: [...request.file, ...e.target.files],
+    };
+    var productImages = [];
+
+    payload.file.map((item) => {
+      return productImages.push(URL.createObjectURL(item));
+    });
+
+    payload = {
+      ...payload,
+      productImage: productImages,
     };
     setRequest(payload);
   };
@@ -244,7 +246,7 @@ export default function NewProduct() {
     var newArr = [...request.variation];
     newArr[index] = {
       ...newArr[index],
-      image: formData,
+      imageFile: formData,
       imageUrl: URL.createObjectURL(
         new Blob(binaryData, { type: "application/zip" })
       ),
@@ -295,6 +297,14 @@ export default function NewProduct() {
 
   const handleSubmit = () => {
     console.log(request);
+    const token = process.env.REACT_APP_TOKEN;
+    axios
+      .post(process.env.REACT_APP_URL_SPRINGBOOT + "product/save", request, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => {
+        console.log(res.data);
+      });
   };
 
   const handleRemoveVariation = (indexVar) => {
@@ -318,7 +328,7 @@ export default function NewProduct() {
   return (
     <div className="newProduct">
       <h1 className="addProductTitle">New Product</h1>
-      <form className="addProductForm">
+      <form className="addProductForm" enctype="multipart/form-data">
         <div className="addProductImage">
           <label>Images</label>
           <label for="file">
@@ -327,7 +337,7 @@ export default function NewProduct() {
           <div className="productUpload">
             {request.productImage.map((item, index) => (
               <div key={index} className="containerImage">
-                <img src={item.url} alt="" className="image" />
+                <img src={item} alt="" className="image" />
                 <div className="middle">
                   <div className="text">
                     <DeleteIcon
@@ -335,6 +345,9 @@ export default function NewProduct() {
                         var payload = {
                           ...request,
                           productImage: request.productImage.filter(
+                            (thumbnail, i) => i !== index
+                          ),
+                          file: request.file.filter(
                             (thumbnail, i) => i !== index
                           ),
                         };
@@ -347,6 +360,8 @@ export default function NewProduct() {
             ))}
             <input
               type="file"
+              multiple
+              accept="image/*"
               onChange={thumbnailHandle}
               id="file"
               style={{ display: "none" }}
@@ -600,7 +615,7 @@ export default function NewProduct() {
           <div className="col-75">
             <input
               type="datetime-local"
-              value={request.createAt}
+              value={request.createAtFormat}
               onChange={handleCreateAtRequest}
               id="createAt"
               name="createAt"
@@ -614,7 +629,7 @@ export default function NewProduct() {
           <div className="col-75">
             <input
               type="datetime-local"
-              value={request.offerEnd}
+              value={request.offerEndFormat}
               onChange={handleOfferEndRequest}
               id="offerEnd"
               name="offerEnd"
