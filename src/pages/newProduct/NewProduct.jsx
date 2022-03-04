@@ -39,6 +39,7 @@ const variationJson = {
     },
   ],
 };
+const formData = new FormData();
 const useStyles = makeStyles((theme) => ({
   formControl: {
     margin: theme.spacing(1),
@@ -198,7 +199,7 @@ export default function NewProduct() {
     newArr[indexVar].size[indexSize] = {
       ...newArr[indexVar].size[indexSize],
       stock: e.target.value,
-    };
+    };  
     var payload = { ...request, variation: newArr };
     setRequest(payload);
   };
@@ -214,14 +215,15 @@ export default function NewProduct() {
     if (e.target.files && e.target.files[0] == null) {
       return;
     }
-    const formData = new FormData();
-    formData.append("file", e.target.files[0]);
+    var productImages = [];
 
     var payload = {
       ...request,
       file: [...request.file, ...e.target.files],
     };
-    var productImages = [];
+    payload.file.map((item) => {
+      return formData.append("imageProduct", item);
+    });
 
     payload.file.map((item) => {
       return productImages.push(URL.createObjectURL(item));
@@ -229,7 +231,7 @@ export default function NewProduct() {
 
     payload = {
       ...payload,
-      productImage: productImages,
+      productImage: productImages.map((name) => ({ name })),
     };
     setRequest(payload);
   };
@@ -238,19 +240,17 @@ export default function NewProduct() {
     if (e.target.files[0] == null) {
       return;
     }
-    const formData = new FormData();
-    formData.append("file", e.target.files[0]);
-
     var binaryData = [];
     binaryData.push(e.target.files[0]);
     var newArr = [...request.variation];
     newArr[index] = {
       ...newArr[index],
-      imageFile: formData,
       imageUrl: URL.createObjectURL(
         new Blob(binaryData, { type: "application/zip" })
       ),
     };
+    formData.append("imageVariation", e.target.files[0]);
+
     var payload = { ...request, variation: newArr };
     setRequest(payload);
   };
@@ -296,10 +296,26 @@ export default function NewProduct() {
   };
 
   const handleSubmit = () => {
+    if (Object.values(request).includes("")) {
+      alert("The information needs to be filled in completely");
+      return;
+    }
+
     console.log(request);
+
+    formData.append(
+      "product",
+      new Blob([JSON.stringify(request)], {
+        type: "application/json",
+      })
+    );
+
+    for (let value of formData.values()) {
+      console.log(value);
+    }
     const token = process.env.REACT_APP_TOKEN;
     axios
-      .post(process.env.REACT_APP_URL_SPRINGBOOT + "product/save", request, {
+      .post(process.env.REACT_APP_URL_SPRINGBOOT + "product/save", formData, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
@@ -337,7 +353,7 @@ export default function NewProduct() {
           <div className="productUpload">
             {request.productImage.map((item, index) => (
               <div key={index} className="containerImage">
-                <img src={item} alt="" className="image" />
+                <img src={item.name} alt="" className="image" />
                 <div className="middle">
                   <div className="text">
                     <DeleteIcon
