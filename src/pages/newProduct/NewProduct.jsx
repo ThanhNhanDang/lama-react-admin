@@ -39,7 +39,6 @@ const variationJson = {
     },
   ],
 };
-const formData = new FormData();
 const useStyles = makeStyles((theme) => ({
   formControl: {
     margin: theme.spacing(1),
@@ -199,12 +198,13 @@ export default function NewProduct() {
     newArr[indexVar].size[indexSize] = {
       ...newArr[indexVar].size[indexSize],
       stock: e.target.value,
-    };  
+    };
     var payload = { ...request, variation: newArr };
     setRequest(payload);
   };
 
   const handleVariation = () => {
+
     var payload = {
       ...request,
       variation: [...request.variation, variationJson],
@@ -221,9 +221,6 @@ export default function NewProduct() {
       ...request,
       file: [...request.file, ...e.target.files],
     };
-    payload.file.map((item) => {
-      return formData.append("imageProduct", item);
-    });
 
     payload.file.map((item) => {
       return productImages.push(URL.createObjectURL(item));
@@ -245,12 +242,11 @@ export default function NewProduct() {
     var newArr = [...request.variation];
     newArr[index] = {
       ...newArr[index],
+      file: e.target.files[0],
       imageUrl: URL.createObjectURL(
         new Blob(binaryData, { type: "application/zip" })
       ),
     };
-    formData.append("imageVariation", e.target.files[0]);
-
     var payload = { ...request, variation: newArr };
     setRequest(payload);
   };
@@ -296,12 +292,24 @@ export default function NewProduct() {
   };
 
   const handleSubmit = () => {
-    if (Object.values(request).includes("")) {
-      alert("The information needs to be filled in completely");
+
+    if(request.productImage.length === 0){
+      alert("Images invalid !");
       return;
     }
 
-    console.log(request);
+    if(request.variation.length === 0){
+      alert("Variation invalid !");
+      return;
+    }
+    const formData = new FormData();
+    request.file.map((item) => {
+      return formData.append("imageProduct", item);
+    });
+
+    request.variation.map((item) => {
+      return formData.append("imageVariation", item.file);
+    });
 
     formData.append(
       "product",
@@ -310,16 +318,17 @@ export default function NewProduct() {
       })
     );
 
-    for (let value of formData.values()) {
-      console.log(value);
-    }
     const token = process.env.REACT_APP_TOKEN;
     axios
       .post(process.env.REACT_APP_URL_SPRINGBOOT + "product/save", formData, {
         headers: { Authorization: `Bearer ${token}` },
       })
-      .then((res) => {
-        console.log(res.data);
+      .then(() => {
+        alert("Succsessfuly :)");
+        setRequest(requestJson);
+      })
+      .catch((error) => {
+        alert(`ERROR: ${error.response.data.message}`);
       });
   };
 
@@ -686,7 +695,10 @@ export default function NewProduct() {
         <div className="row">
           <div className="col-25">
             <label>
-              <h1>Variation</h1>
+              <h1>
+                Variation: Total is{" "}
+                <u style={{ color: "blue" }}>{request.variation.length}</u>.
+              </h1>
             </label>
           </div>
           <div className="col-50">
@@ -754,7 +766,10 @@ export default function NewProduct() {
             <div className="row">
               <div className="col-25">
                 <label>
-                  <b>Size:</b>
+                  <b>
+                    Size: Total is{" "}
+                    <u style={{ color: "blue" }}>{item.size.length}</u>.
+                  </b>
                 </label>
               </div>
               <div className="col-50">
